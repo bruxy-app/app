@@ -20,7 +20,7 @@ export default function App() {
 					initialRouteName='Home'
 					screenOptions={{
 						tabBarStyle: {
-							backgroundColor: '#1b3ce0',
+							backgroundColor: '#2176FF',
 							borderTopLeftRadius: 10,
 							borderTopRightRadius: 10,
 						},
@@ -68,6 +68,5 @@ const styles = StyleSheet.create({
 	container: {
 		width: '100%',
 		backgroundColor: '#fff',
-		justifyContent: 'center',
 	},
 });
