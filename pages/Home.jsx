@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
+import { api } from '../helpers/api';
 
 export default function Home() {
 	const [isLoading, setLoading] = useState(true);
@@ -8,18 +9,17 @@ export default function Home() {
 
 	const getData = async () => {
 		try {
-			const response = await fetch('http://localhost:8080/api/treatments');
+			const { data } = await api.get('/treatments');
 
-			const json = await response.json();
 			setData([
 				{
 					name: 'Concluído',
-					progress: json.progress,
+					progress: data.progress,
 					color: '#FFF',
 				},
 				{
 					name: 'Em andamento',
-					progress: 100 - json.progress,
+					progress: 100 - data.progress,
 					color: '#2176FF',
 				},
 			]);
