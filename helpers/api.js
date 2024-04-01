@@ -9,4 +9,15 @@ const api = axios.create({
 	},
 });
 
+api.interceptors.response.use(
+	(response) => response.data,
+	(error) => {
+		if (error.response.status === 401) {
+			console.log('Unauthorized');
+		}
+
+		return Promise.reject(error);
+	}
+);
+
 export { api };

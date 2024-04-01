@@ -1,23 +1,49 @@
 import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { useEffect, useState } from 'react';
+import { api } from '../helpers/api';
 
 export default function Treatments() {
+	const [isLoading, setLoading] = useState(true);
+	const [data, setData] = useState({});
+
+	const getData = async () => {
+		try {
+			const { data } = await api.get('/treatments');
+
+			setData({
+				treatment_uuid: data.treatment_uuid,
+				responsible: data.responsible,
+				duration: data.duration,
+				start: data.start,
+			});
+		} catch (error) {
+			console.error(error);
+		} finally {
+			setLoading(false);
+		}
+	};
+
+	useEffect(() => {
+		getData();
+	}, []);
+
 	return (
 		<ScrollView style={styles.container}>
 			<Text style={styles.pageTitle}>Tratamentos</Text>
 			<Text style={styles.cardLabel}>Atual</Text>
 			<View style={{ ...styles.infoCard, marginBottom: 10 }}>
 				<Text style={{ lineHeight: 20 }}>
-					Código do tratamento:
+					Código do tratamento: {data.treatment_uuid}
 					<br />
-					Responsável: Francisco Cavasan
+					Responsável: {data.responsible}
 					<br />
-					Duração: 7 dias
+					Duração: {data.duration}
 					<br />
-					Início: 12/03/2024
+					Início: {data.start}
 				</Text>
 			</View>
 
-			<Text style={styles.cardLabel}>Histórico</Text>
+			{/* <Text style={styles.cardLabel}>Histórico</Text> */}
 		</ScrollView>
 	);
 }
