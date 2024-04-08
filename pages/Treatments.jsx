@@ -1,11 +1,12 @@
-import { View, StyleSheet, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, ScrollView, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useEffect, useState } from 'react';
 import { api } from '../helpers/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Treatments() {
-	const [isLoading, setLoading] = useState(true);
 	const [data, setData] = useState({});
-
+	const [hasTreatment, setHasTreatment] = useState(false);
+	const [treatmentUuid, settreatmentUuid] = useState('');
 	const getData = async () => {
 		try {
 			const { data } = await api.get('/treatments');
@@ -18,32 +19,69 @@ export default function Treatments() {
 			});
 		} catch (error) {
 			console.error(error);
-		} finally {
-			setLoading(false);
+		}
+	};
+	useEffect(async () => {
+		const hasTreatment = await AsyncStorage.getItem('treatmentUuid');
+		if (!hasTreatment) {
+			getData();
+		} else {
+			setHasTreatment(true);
+		}
+	}, []);
+
+	const submitTreatmentUuid = async () => {
+		try {
+			const { data } = await api.post('/treatments', {
+				treatment_uuid: treatmentUuid,
+			});
+
+			await AsyncStorage.setItem('treatmentUuid', treatmentUuid);
+			setHasTreatment(true);
+		} catch (error) {
+			console.error(error);
 		}
 	};
 
-	useEffect(() => {
-		getData();
-	}, []);
+	if (hasTreatment) {
+		return (
+			<ScrollView style={styles.container}>
+				<Text style={styles.pageTitle}>Tratamentos</Text>
+				<Text style={styles.cardLabel}>Atual</Text>
+				<View style={{ ...styles.infoCard, marginBottom: 10 }}>
+					<Text style={{ lineHeight: 20 }}>Código do tratamento: {data.treatment_uuid}</Text>
+					<Text>Responsável: {data.responsible}</Text>
+					<Text>Duração: {data.duration}</Text>
+					<Text>Início: {data.start}</Text>
+				</View>
+
+				{/* <Text style={styles.cardLabel}>Histórico</Text> */}
+			</ScrollView>
+		);
+	}
 
 	return (
-		<ScrollView style={styles.container}>
-			<Text style={styles.pageTitle}>Tratamentos</Text>
-			<Text style={styles.cardLabel}>Atual</Text>
-			<View style={{ ...styles.infoCard, marginBottom: 10 }}>
-				<Text style={{ lineHeight: 20 }}>
-					Código do tratamento: {data.treatment_uuid}
-					<br />
-					Responsável: {data.responsible}
-					<br />
-					Duração: {data.duration}
-					<br />
-					Início: {data.start}
-				</Text>
-			</View>
+		<ScrollView>
+			<View
+				style={{
+					alignItems: 'center',
+					justifyContent: 'center',
+					flex: 1,
+					minHeight: 100,
+				}}
+			>
+				<TextInput
+					style={styles.input}
+					value={treatmentUuid}
+					onChangeText={settreatmentUuid}
+					placeholder='Código do tratamento'
+					keyboardType='default'
+				/>
 
-			{/* <Text style={styles.cardLabel}>Histórico</Text> */}
+				<TouchableOpacity onPress={submitTreatmentUuid} style={styles.infoButton}>
+					<Text>Enviar</Text>
+				</TouchableOpacity>
+			</View>
 		</ScrollView>
 	);
 }
@@ -75,5 +113,12 @@ const styles = StyleSheet.create({
 		height: 33,
 		justifyContent: 'center',
 		alignItems: 'center',
+		alignSelf: 'center',
+	},
+	input: {
+		height: 40,
+		margin: 12,
+		borderWidth: 1,
+		padding: 10,
 	},
 });

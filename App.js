@@ -1,66 +1,56 @@
-import 'react-native-gesture-handler';
-import React from 'react';
-import { StyleSheet, View, Text } from 'react-native';
+import React, { useEffect } from 'react';
+import { AppRegistry, StyleSheet } from 'react-native';
 import Home from './pages/Home';
 import TreatmentProgress from './pages/TreatmentProgress';
 import Treatments from './pages/Treatments';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { default as FontAwesomeIcon } from 'react-native-vector-icons/FontAwesome';
 import { default as FeatherIcon } from 'react-native-vector-icons/Feather';
 import { default as AntDesignIcon } from 'react-native-vector-icons/AntDesign';
-import { createDrawerNavigator } from '@react-navigation/drawer';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import Header from './Components/Header';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NotificationModal from './Components/NotificationModal';
+import { setupNotifications, navigationRef } from './helpers';
 
-function MenuScreen() {
-	return <View></View>;
-}
+AppRegistry.registerComponent('notification-modal', NotificationModal);
 
-export default function App() {
-	const Drawer = createDrawerNavigator();
+const setAuthUser = async () => {
+	const tratmentUuid = await AsyncStorage.getItem('tratmentUuid');
 
-	return (
-		<NavigationContainer>
-			<Drawer.Navigator drawerContent={MenuScreen}>
-				<Drawer.Screen
-					options={{
-						drawerPosition: 'right',
-						headerStyle: styles.header,
-						headerTitleStyle: { color: '#FFF' },
-						header: ({ navigation }) => (
-							<View style={styles.header}>
-								<Text style={{ color: '#fff', fontSize: 18 }}>BRUXY</Text>
-								<Icon.Button
-									onPress={() => navigation.openDrawer()}
-									iconStyle={{ margin: 0 }}
-									name='menu'
-									color='#fff'
-								/>
-							</View>
-						),
-					}}
-					name='drawer'
-					component={MainStackNavigator}
-				/>
-			</Drawer.Navigator>
-		</NavigationContainer>
-	);
-}
+	if (tratmentUuid) {
+		AsyncStorage.setItem('tratmentUuid', tratmentUuid);
+		//TODO: update scheduled_notifications and set local answered notifications
+	} else {
+		AsyncStorage.removeItem('tratmentUuid');
+	}
+};
 
-const MainStackNavigator = () => {
+function BottomTabs() {
 	const Tab = createBottomTabNavigator();
 
 	return (
 		<Tab.Navigator
 			initialRouteName='Home'
-			screenOptions={{
+			screenOptions={({ route }) => ({
 				tabBarStyle: {
 					backgroundColor: '#2176FF',
 					borderTopLeftRadius: 10,
 					borderTopRightRadius: 10,
 				},
-				headerShown: false,
-			}}
+				tabBarIcon: ({ focused }) => {
+					if (route.name === 'Home') {
+						return <FontAwesomeIcon name='home' size={30} color={focused ? '#FFF' : '#000'} />;
+					}
+					if (route.name === 'TreatmentProgress') {
+						return <AntDesignIcon name='linechart' size={30} color={focused ? '#FFF' : '#000'} />;
+					}
+					if (route.name === 'Treatments') {
+						return <FeatherIcon name='clipboard' size={30} color={focused ? '#FFF' : '#000'} />;
+					}
+				},
+			})}
 		>
 			<Tab.Screen
 				name='Home'
@@ -68,9 +58,6 @@ const MainStackNavigator = () => {
 				options={{
 					title: '',
 					tabBarLabel: '',
-					tabBarIcon: ({ focused }) => (
-						<FontAwesomeIcon name='home' size={30} color={focused ? '#000' : 'fff'} />
-					),
 				}}
 			/>
 			<Tab.Screen
@@ -78,9 +65,6 @@ const MainStackNavigator = () => {
 				component={TreatmentProgress}
 				options={{
 					tabBarLabel: '',
-					tabBarIcon: ({ focused }) => (
-						<AntDesignIcon name='linechart' size={30} color={focused ? '#000' : 'fff'} />
-					),
 				}}
 			/>
 			<Tab.Screen
@@ -88,14 +72,34 @@ const MainStackNavigator = () => {
 				component={Treatments}
 				options={{
 					tabBarLabel: '',
-					tabBarIcon: ({ focused }) => (
-						<FeatherIcon name='clipboard' size={30} color={focused ? '#000' : 'fff'} />
-					),
 				}}
 			/>
 		</Tab.Navigator>
 	);
-};
+}
+
+export default function App() {
+	useEffect(() => {
+		setupNotifications();
+
+		setAuthUser();
+	});
+
+	const Stack = createStackNavigator();
+
+	return (
+		<NavigationContainer ref={navigationRef}>
+			<Stack.Navigator
+				screenOptions={{
+					header: Header,
+				}}
+			>
+				<Stack.Screen name='Home' component={BottomTabs} />
+				<Stack.Screen name='question-modal' component={NotificationModal} />
+			</Stack.Navigator>
+		</NavigationContainer>
+	);
+}
 
 const styles = StyleSheet.create({
 	container: {

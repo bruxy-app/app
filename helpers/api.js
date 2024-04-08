@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { BASE_API_URL } from '@env';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const api = axios.create({
 	baseURL: BASE_API_URL,
@@ -12,10 +13,10 @@ const api = axios.create({
 api.interceptors.response.use(
 	(response) => response.data,
 	(error) => {
-		if (error.response.status === 401) {
-			console.log('Unauthorized');
+		console.log(JSON.stringify(error));
+		if (error.response && error.response.status === 401) {
+			AsyncStorage.setItem('treatmentUuid', '');
 		}
-
 		return Promise.reject(error);
 	}
 );

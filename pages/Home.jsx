@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
-import { api } from '../helpers/api';
+import { api } from '../helpers';
+import notifee from '@notifee/react-native';
 
 export default function Home() {
 	const [isLoading, setLoading] = useState(true);
@@ -44,6 +45,28 @@ export default function Home() {
 		color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
 	};
 
+	async function onPress() {
+		// Create a channel (required for Android)
+		const channel = await notifee.getChannel('default');
+
+		if (!channel) {
+			return;
+		}
+
+		// Display a notification
+		await notifee.displayNotification({
+			title: 'Notification Title',
+			body: 'Main body content of the notification',
+			android: {
+				channelId: channel.id,
+				// pressAction is needed if you want the notification to open the app when pressed
+				pressAction: {
+					id: 'question-modal',
+				},
+			},
+		});
+	}
+
 	const screenWidth = Dimensions.get('window').width;
 	return (
 		<ScrollView style={styles.container}>
@@ -69,7 +92,9 @@ export default function Home() {
 					unchanged.
 				</Text>
 
-				<TouchableOpacity style={styles.infoButton}>Saiba mais</TouchableOpacity>
+				<TouchableOpacity onPress={() => onPress()} style={styles.infoButton}>
+					<Text>Saiba mais</Text>
+				</TouchableOpacity>
 			</View>
 
 			<Text style={styles.cardLabel}>Como usar o aplicativo</Text>
@@ -82,7 +107,9 @@ export default function Home() {
 					unchanged.
 				</Text>
 
-				<TouchableOpacity style={styles.infoButton}>Saiba mais</TouchableOpacity>
+				<TouchableOpacity style={styles.infoButton}>
+					<Text>Saiba mais</Text>
+				</TouchableOpacity>
 			</View>
 		</ScrollView>
 	);
