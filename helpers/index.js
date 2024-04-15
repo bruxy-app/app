@@ -1,5 +1,5 @@
 import { api } from './api';
-import { setupNotifications } from './Notification';
+import { setupNotifications, scheduleNotification } from './Notification';
 import { navigationRef } from './RootNavigation';
 
-export { api, setupNotifications, navigationRef };
+export { api, setupNotifications, scheduleNotification, navigationRef };

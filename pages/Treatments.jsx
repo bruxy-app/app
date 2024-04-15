@@ -6,34 +6,46 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default function Treatments() {
 	const [data, setData] = useState({});
 	const [hasTreatment, setHasTreatment] = useState(false);
-	const [treatmentUuid, settreatmentUuid] = useState('');
-	const getData = async () => {
+	const [treatmentUuid, setTreatmentUuid] = useState('');
+	const getData = async (treatmentUuid) => {
 		try {
-			const { data } = await api.get('/treatments');
+			const data = await api.get('/treatments/' + treatmentUuid);
+			setData({
+				treatment_uuid: data.uuid,
+				responsible: data.responsible.name,
+				duration: data.duration,
+				start: data.starts_at,
+			});
+
+			setHasTreatment(true);
+		} catch (error) {
+			console.error(error);
+		}
+	};
+	useEffect(() => {
+		const getPageData = async () => {
+			const treatmentUuid = await AsyncStorage.getItem('treatmentUuid');
+			if (treatmentUuid) {
+				getData(treatmentUuid);
+			}
+		};
+
+		getPageData();
+	}, []);
+
+	const submitTreatmentUuid = async () => {
+		try {
+			const data = await api.post('/treatments/start', {
+				treatment_uuid: treatmentUuid,
+			});
+
+			console.log(data);
 
 			setData({
 				treatment_uuid: data.treatment_uuid,
 				responsible: data.responsible,
 				duration: data.duration,
 				start: data.start,
-			});
-		} catch (error) {
-			console.error(error);
-		}
-	};
-	useEffect(async () => {
-		const hasTreatment = await AsyncStorage.getItem('treatmentUuid');
-		if (!hasTreatment) {
-			getData();
-		} else {
-			setHasTreatment(true);
-		}
-	}, []);
-
-	const submitTreatmentUuid = async () => {
-		try {
-			const { data } = await api.post('/treatments', {
-				treatment_uuid: treatmentUuid,
 			});
 
 			await AsyncStorage.setItem('treatmentUuid', treatmentUuid);
@@ -46,8 +58,8 @@ export default function Treatments() {
 	if (hasTreatment) {
 		return (
 			<ScrollView style={styles.container}>
-				<Text style={styles.pageTitle}>Tratamentos</Text>
-				<Text style={styles.cardLabel}>Atual</Text>
+				<Text style={styles.pageTitle}>Tratamento</Text>
+				{/* <Text style={styles.cardLabel}>Atual</Text> */}
 				<View style={{ ...styles.infoCard, marginBottom: 10 }}>
 					<Text style={{ lineHeight: 20 }}>Código do tratamento: {data.treatment_uuid}</Text>
 					<Text>Responsável: {data.responsible}</Text>
@@ -73,7 +85,7 @@ export default function Treatments() {
 				<TextInput
 					style={styles.input}
 					value={treatmentUuid}
-					onChangeText={settreatmentUuid}
+					onChangeText={setTreatmentUuid}
 					placeholder='Código do tratamento'
 					keyboardType='default'
 				/>
@@ -119,6 +131,7 @@ const styles = StyleSheet.create({
 		height: 40,
 		margin: 12,
 		borderWidth: 1,
+		width: 300,
 		padding: 10,
 	},
 });

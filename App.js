@@ -12,20 +12,9 @@ import { default as AntDesignIcon } from 'react-native-vector-icons/AntDesign';
 import Header from './Components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationModal from './Components/NotificationModal';
-import { setupNotifications, navigationRef } from './helpers';
+import { setupNotifications, navigationRef, scheduleNotification, api } from './helpers';
 
 AppRegistry.registerComponent('notification-modal', NotificationModal);
-
-const setAuthUser = async () => {
-	const tratmentUuid = await AsyncStorage.getItem('tratmentUuid');
-
-	if (tratmentUuid) {
-		AsyncStorage.setItem('tratmentUuid', tratmentUuid);
-		//TODO: update scheduled_notifications and set local answered notifications
-	} else {
-		AsyncStorage.removeItem('tratmentUuid');
-	}
-};
 
 function BottomTabs() {
 	const Tab = createBottomTabNavigator();
@@ -34,6 +23,7 @@ function BottomTabs() {
 		<Tab.Navigator
 			initialRouteName='Home'
 			screenOptions={({ route }) => ({
+				headerShown: false,
 				tabBarStyle: {
 					backgroundColor: '#2176FF',
 					borderTopLeftRadius: 10,
@@ -57,21 +47,27 @@ function BottomTabs() {
 				component={Home}
 				options={{
 					title: '',
+					headerShown: false,
 					tabBarLabel: '',
+					unmountOnBlur: true,
 				}}
 			/>
-			<Tab.Screen
+			{/* <Tab.Screen
 				name='TreatmentProgress'
 				component={TreatmentProgress}
 				options={{
+					title: '',
 					tabBarLabel: '',
 				}}
-			/>
+			/> */}
 			<Tab.Screen
 				name='Treatments'
 				component={Treatments}
 				options={{
+					title: '',
 					tabBarLabel: '',
+					headerShown: false,
+					unmountOnBlur: true,
 				}}
 			/>
 		</Tab.Navigator>
@@ -82,8 +78,40 @@ export default function App() {
 	useEffect(() => {
 		setupNotifications();
 
-		setAuthUser();
-	});
+		const fetchData = async () => {
+			const treatmentUuid = await AsyncStorage.getItem('treatmentUuid');
+
+			console.log('treatmentUuid', treatmentUuid);
+
+			if (treatmentUuid) {
+				AsyncStorage.setItem('treatmentUuid', treatmentUuid);
+				//TODO: update scheduled_notifications and set local answered notifications
+			} else {
+				AsyncStorage.removeItem('treatmentUuid');
+			}
+
+			return treatmentUuid;
+		};
+
+		const scheduleNotifications = async (treatmentUuid) => {
+			const data = await api.get(`/treatments/${treatmentUuid}/scheduled_notifications`);
+
+			console.log(data);
+
+			for (const notification of data) {
+				await scheduleNotification(notification);
+			}
+		};
+
+		const fetchDataAndScheduleNotifications = async () => {
+			const treatmentUuid = await fetchData();
+			if (treatmentUuid) {
+				await scheduleNotifications(treatmentUuid);
+			}
+		};
+
+		fetchDataAndScheduleNotifications();
+	}, []);
 
 	const Stack = createStackNavigator();
 
@@ -93,8 +121,9 @@ export default function App() {
 				screenOptions={{
 					header: Header,
 				}}
+				initialRouteName='Main'
 			>
-				<Stack.Screen name='Home' component={BottomTabs} />
+				<Stack.Screen name='Main' component={BottomTabs} />
 				<Stack.Screen name='question-modal' component={NotificationModal} />
 			</Stack.Navigator>
 		</NavigationContainer>

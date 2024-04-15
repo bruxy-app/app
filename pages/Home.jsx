@@ -3,10 +3,11 @@ import { View, StyleSheet, Text, TouchableOpacity, Dimensions, ScrollView } from
 import { PieChart } from 'react-native-chart-kit';
 import { api } from '../helpers';
 import notifee from '@notifee/react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function Home() {
-	const [isLoading, setLoading] = useState(true);
 	const [data, setData] = useState([]);
+	const [hasTreatment, setHasTreatment] = useState('');
 
 	const getData = async () => {
 		try {
@@ -26,13 +27,20 @@ export default function Home() {
 			]);
 		} catch (error) {
 			console.error(error);
-		} finally {
-			setLoading(false);
 		}
 	};
 
 	useEffect(() => {
-		getData();
+		const getPageData = async () => {
+			const hasTreatment = await AsyncStorage.getItem('treatmentUuid');
+			if (!hasTreatment) {
+				getData();
+			} else {
+				setHasTreatment(true);
+			}
+		};
+
+		getPageData();
 	}, []);
 
 	const chartConfig = {
@@ -55,13 +63,16 @@ export default function Home() {
 
 		// Display a notification
 		await notifee.displayNotification({
-			title: 'Notification Title',
-			body: 'Main body content of the notification',
+			title: 'Alerta de bruxismo',
+			body: 'Responda as perguntas sobre bruxismo',
+			id: 'a',
 			android: {
 				channelId: channel.id,
+
 				// pressAction is needed if you want the notification to open the app when pressed
 				pressAction: {
 					id: 'question-modal',
+					mainComponent: 'notification-modal',
 				},
 			},
 		});
@@ -70,17 +81,20 @@ export default function Home() {
 	const screenWidth = Dimensions.get('window').width;
 	return (
 		<ScrollView style={styles.container}>
-			<Text style={styles.cardLabel}>Seu tratamento</Text>
-
-			<PieChart
-				accessor={'progress'}
-				backgroundColor={'transparent'}
-				paddingLeft='-30'
-				data={data}
-				height={150}
-				width={screenWidth}
-				chartConfig={chartConfig}
-			/>
+			{/* {hasTreatment ? (
+				<View>
+					<Text style={styles.cardLabel}>Seu tratamento</Text>
+					<PieChart
+						accessor={'progress'}
+						backgroundColor={'transparent'}
+						paddingLeft='-30'
+						data={data}
+						height={150}
+						width={screenWidth}
+						chartConfig={chartConfig}
+					/>
+				</View>
+			) : null} */}
 
 			<Text style={styles.cardLabel}>Entenda sobre o bruxismo</Text>
 			<View style={{ ...styles.infoCard, marginBottom: 10 }}>
@@ -96,7 +110,6 @@ export default function Home() {
 					<Text>Saiba mais</Text>
 				</TouchableOpacity>
 			</View>
-
 			<Text style={styles.cardLabel}>Como usar o aplicativo</Text>
 			<View style={styles.infoCard}>
 				<Text style={{ lineHeight: 20 }}>
