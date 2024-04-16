@@ -10,6 +10,13 @@ const api = axios.create({
 	},
 });
 
+// api.interceptors.request.use(async () => {
+// 	const treatmentUuid = await AsyncStorage.getItem('treatmentUuid');
+// 	if (treatmentUuid) {
+// 		api.defaults.headers.common['Treatment-Uuid'] = treatmentUuid;
+// 	}
+// });
+
 api.interceptors.response.use(
 	(response) => response.data,
 	(error) => {

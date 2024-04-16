@@ -9,12 +9,13 @@ export default function Treatments() {
 	const [treatmentUuid, setTreatmentUuid] = useState('');
 	const getData = async (treatmentUuid) => {
 		try {
-			const data = await api.get('/treatments/' + treatmentUuid);
+			const response = await api.get('/treatments/' + treatmentUuid);
+
 			setData({
-				treatment_uuid: data.uuid,
-				responsible: data.responsible.name,
-				duration: data.duration,
-				start: data.starts_at,
+				treatment_uuid: response.uuid,
+				responsible: response.responsible.name,
+				duration: response.duration,
+				start: response.starts_at,
 			});
 
 			setHasTreatment(true);
@@ -35,17 +36,15 @@ export default function Treatments() {
 
 	const submitTreatmentUuid = async () => {
 		try {
-			const data = await api.post('/treatments/start', {
+			const response = await api.post('/treatments/start', {
 				treatment_uuid: treatmentUuid,
 			});
 
-			console.log(data);
-
 			setData({
-				treatment_uuid: data.treatment_uuid,
-				responsible: data.responsible,
-				duration: data.duration,
-				start: data.start,
+				treatment_uuid: response.treatment_uuid,
+				responsible: response.responsible,
+				duration: response.duration,
+				start: response.start,
 			});
 
 			await AsyncStorage.setItem('treatmentUuid', treatmentUuid);

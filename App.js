@@ -81,8 +81,6 @@ export default function App() {
 		const fetchData = async () => {
 			const treatmentUuid = await AsyncStorage.getItem('treatmentUuid');
 
-			console.log('treatmentUuid', treatmentUuid);
-
 			if (treatmentUuid) {
 				AsyncStorage.setItem('treatmentUuid', treatmentUuid);
 				//TODO: update scheduled_notifications and set local answered notifications
@@ -94,13 +92,19 @@ export default function App() {
 		};
 
 		const scheduleNotifications = async (treatmentUuid) => {
-			const data = await api.get(`/treatments/${treatmentUuid}/scheduled_notifications`);
-
-			console.log(data);
-
-			for (const notification of data) {
-				await scheduleNotification(notification);
+			const data = await api.get(`/treatments/${treatmentUuid}/notifications`);
+			console.log('data', data);
+			if (data.status !== 'in_progress') {
+				return;
 			}
+
+			const storage = [];
+			for (const notification of data.notifications) {
+				if (await scheduleNotification(notification)) {
+					storage.push(notification);
+				}
+			}
+			await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(storage));
 		};
 
 		const fetchDataAndScheduleNotifications = async () => {

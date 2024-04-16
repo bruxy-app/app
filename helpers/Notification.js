@@ -33,6 +33,7 @@ export const setupNotifications = async () => {
 	notifee.onBackgroundEvent(async (event) => {
 		if (event.type === EventType.PRESS) {
 			if (event.detail.pressAction.id === 'question-modal') {
+				console.log('notification press', event.detail.notification.id);
 				navigationRef.navigate('question-modal', {
 					question_uuid: event.detail.notification.id,
 				});
@@ -47,22 +48,37 @@ export const setupNotifications = async () => {
 };
 
 export const scheduleNotification = async (data) => {
+	console.log('notification', data);
+	if (data.response || new Date(data.sent_at).getTime() < new Date().getTime()) {
+		return false;
+	}
+
+	const notifications = await notifee.getTriggerNotifications();
+
+	if (notifications.find((notification) => notification.notification.id === data.uuid)) {
+		console.log('canceling notification');
+		await notifee.cancelTriggerNotification(data.uuid);
+	}
+
+	console.log('creating notification');
 	await notifee.createTriggerNotification(
 		{
-			title: data.title,
+			title: 'Responda às perguntas do seu tratamento',
 			body: data.body,
 			id: data.uuid,
 			android: {
 				channelId: 'default',
 				pressAction: {
 					id: 'question-modal',
-					title: 'Responder',
+					mainComponent: 'notification-modal',
 				},
 			},
 		},
 		{
 			type: TriggerType.TIMESTAMP,
-			timestamp: data.timestamp,
+			timestamp: new Date(data.sent_at).getTime(),
 		}
 	);
+
+	return true;
 };
