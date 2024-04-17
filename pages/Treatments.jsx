@@ -41,10 +41,10 @@ export default function Treatments() {
 			});
 
 			setData({
-				treatment_uuid: response.treatment_uuid,
-				responsible: response.responsible,
+				treatment_uuid: response.uuid,
+				responsible: response.responsible.name,
 				duration: response.duration,
-				start: response.start,
+				start: response.starts_at,
 			});
 
 			await AsyncStorage.setItem('treatmentUuid', treatmentUuid);
@@ -59,7 +59,7 @@ export default function Treatments() {
 			<ScrollView style={styles.container}>
 				<Text style={styles.pageTitle}>Tratamento</Text>
 				{/* <Text style={styles.cardLabel}>Atual</Text> */}
-				<View style={{ ...styles.infoCard, marginBottom: 10 }}>
+				<View style={styles.infoCard}>
 					<Text style={{ lineHeight: 20 }}>Código do tratamento: {data.treatment_uuid}</Text>
 					<Text>Responsável: {data.responsible}</Text>
 					<Text>Duração: {data.duration}</Text>
@@ -111,6 +111,7 @@ const styles = StyleSheet.create({
 	},
 	infoCard: {
 		padding: 10,
+		marginBottom: 10,
 		borderRadius: 8,
 		backgroundColor: '#E8EAEE',
 		justifyContent: 'center',

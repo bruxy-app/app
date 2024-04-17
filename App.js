@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { AppRegistry, StyleSheet } from 'react-native';
+import { AppRegistry } from 'react-native';
 import Home from './pages/Home';
 import TreatmentProgress from './pages/TreatmentProgress';
 import Treatments from './pages/Treatments';
@@ -13,6 +13,7 @@ import Header from './Components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationModal from './Components/NotificationModal';
 import { setupNotifications, navigationRef, scheduleNotification, api } from './helpers';
+import { StatusBar } from 'react-native';
 
 AppRegistry.registerComponent('notification-modal', NotificationModal);
 
@@ -121,6 +122,7 @@ export default function App() {
 
 	return (
 		<NavigationContainer ref={navigationRef}>
+			<StatusBar backgroundColor='#2176FF' barStyle='light-content' />
 			<Stack.Navigator
 				screenOptions={{
 					header: Header,
@@ -133,20 +135,3 @@ export default function App() {
 		</NavigationContainer>
 	);
 }
-
-const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: '#fff',
-	},
-	header: {
-		padding: 10,
-		backgroundColor: '#2176FF',
-		borderBottomLeftRadius: 10,
-		borderBottomRightRadius: 10,
-		flexDirection: 'row',
-		flexWrap: 'nowrap',
-		alignItems: 'center',
-		justifyContent: 'space-between',
-	},
-});
