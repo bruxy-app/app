@@ -12,7 +12,7 @@ import { default as AntDesignIcon } from 'react-native-vector-icons/AntDesign';
 import Header from './Components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationModal from './Components/NotificationModal';
-import { setupNotifications, navigationRef, scheduleNotification, api } from './helpers';
+import { setupNotifications, navigationRef, scheduleNotifications } from './helpers';
 import { StatusBar } from 'react-native';
 
 AppRegistry.registerComponent('notification-modal', NotificationModal);
@@ -92,22 +92,6 @@ export default function App() {
 			return treatmentUuid;
 		};
 
-		const scheduleNotifications = async (treatmentUuid) => {
-			const data = await api.get(`/treatments/${treatmentUuid}/notifications`);
-			console.log('data', data);
-			if (data.status !== 'in_progress') {
-				return;
-			}
-
-			const storage = [];
-			for (const notification of data.notifications) {
-				if (await scheduleNotification(notification)) {
-					storage.push(notification);
-				}
-			}
-			await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(storage));
-		};
-
 		const fetchDataAndScheduleNotifications = async () => {
 			const treatmentUuid = await fetchData();
 			if (treatmentUuid) {
@@ -122,7 +106,7 @@ export default function App() {
 
 	return (
 		<NavigationContainer ref={navigationRef}>
-			<StatusBar backgroundColor='#2176FF' barStyle='light-content' />
+			<StatusBar backgroundColor='#000' barStyle='light-content' />
 			<Stack.Navigator
 				screenOptions={{
 					header: Header,

@@ -2,6 +2,7 @@ import { View, StyleSheet, ScrollView, Text, TextInput, TouchableOpacity } from 
 import { useEffect, useState } from 'react';
 import { api } from '../helpers/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { scheduleNotifications } from '../helpers';
 
 export default function Treatments() {
 	const [data, setData] = useState({});
@@ -48,6 +49,7 @@ export default function Treatments() {
 			});
 
 			await AsyncStorage.setItem('treatmentUuid', treatmentUuid);
+			scheduleNotifications(treatmentUuid);
 			setHasTreatment(true);
 		} catch (error) {
 			console.error(error);
@@ -62,7 +64,9 @@ export default function Treatments() {
 				<View style={styles.infoCard}>
 					<Text style={{ lineHeight: 20 }}>Código do tratamento: {data.treatment_uuid}</Text>
 					<Text>Responsável: {data.responsible}</Text>
-					<Text>Duração: {data.duration}</Text>
+					<Text>
+						Duração: {data.duration} {data.duration > 1 ? 'dias' : 'dia'}
+					</Text>
 					<Text>Início: {data.start}</Text>
 				</View>
 

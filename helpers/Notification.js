@@ -5,6 +5,8 @@ import notifee, {
 	TriggerType,
 } from '@notifee/react-native';
 import { navigationRef } from './RootNavigation';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from './api';
 
 export const setupNotifications = async () => {
 	await notifee.requestPermission();
@@ -24,7 +26,7 @@ export const setupNotifications = async () => {
 		if (event.type === EventType.PRESS) {
 			if (event.detail.pressAction.id === 'question-modal') {
 				navigationRef.navigate('question-modal', {
-					question_uuid: event.detail.notification.id,
+					notification_uuid: event.detail.notification.id,
 				});
 			}
 		}
@@ -35,7 +37,7 @@ export const setupNotifications = async () => {
 			if (event.detail.pressAction.id === 'question-modal') {
 				console.log('notification press', event.detail.notification.id);
 				navigationRef.navigate('question-modal', {
-					question_uuid: event.detail.notification.id,
+					notification_uuid: event.detail.notification.id,
 				});
 
 				return new Promise((resolve) => {
@@ -45,6 +47,22 @@ export const setupNotifications = async () => {
 			}
 		}
 	});
+};
+
+export const scheduleNotifications = async (treatmentUuid) => {
+	const data = await api.get(`/treatments/${treatmentUuid}/notifications`);
+	console.log('data', data);
+	if (data.status !== 'in_progress') {
+		return;
+	}
+
+	const storage = [];
+	for (const notification of data.notifications) {
+		if (await scheduleNotification(notification)) {
+			storage.push(notification);
+		}
+	}
+	await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(storage));
 };
 
 export const scheduleNotification = async (data) => {
