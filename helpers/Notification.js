@@ -85,6 +85,7 @@ export const scheduleNotification = async (data) => {
 			body: data.body,
 			id: data.uuid,
 			android: {
+				ongoing: true,
 				channelId: 'default',
 				pressAction: {
 					id: 'question-modal',
@@ -99,4 +100,31 @@ export const scheduleNotification = async (data) => {
 	);
 
 	return true;
+};
+
+export const sendLocalNotificationResponses = async () => {
+	let notifications = await AsyncStorage.getItem('answeredNotification');
+
+	if (!notifications) {
+		console.log('No local notifications to send');
+		return;
+	}
+
+	notifications = JSON.parse(notifications);
+	if (notifications.length === 0) {
+		console.log('No local notifications to send');
+		return;
+	}
+
+	console.log('Sending local notifications', notifications);
+
+	for (const [index, notification] of notifications.entries()) {
+		await api.post(`treatments/${notification.uuid}/respond`, {
+			notification,
+		});
+
+		notifications.splice(index, 1);
+
+		await AsyncStorage.setItem('answeredNotification', JSON.stringify(notifications));
+	}
 };

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AppRegistry } from 'react-native';
 import Home from './pages/Home';
 import TreatmentProgress from './pages/TreatmentProgress';
@@ -12,8 +12,14 @@ import { default as AntDesignIcon } from 'react-native-vector-icons/AntDesign';
 import Header from './Components/Header';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NotificationModal from './Components/NotificationModal';
-import { setupNotifications, navigationRef, scheduleNotifications } from './helpers';
+import {
+	setupNotifications,
+	navigationRef,
+	scheduleNotifications,
+	sendLocalNotificationResponses,
+} from './helpers';
 import { StatusBar } from 'react-native';
+import { useNetInfo } from '@react-native-community/netinfo';
 
 AppRegistry.registerComponent('notification-modal', NotificationModal);
 
@@ -25,6 +31,7 @@ function BottomTabs() {
 			initialRouteName='Home'
 			screenOptions={({ route }) => ({
 				headerShown: false,
+				tabBarShowLabel: false,
 				tabBarStyle: {
 					backgroundColor: '#2176FF',
 					borderTopLeftRadius: 10,
@@ -76,6 +83,9 @@ function BottomTabs() {
 }
 
 export default function App() {
+	const [updatingNotifications, setUpdatingNotifications] = useState(false);
+	const { isConnected } = useNetInfo();
+
 	useEffect(() => {
 		setupNotifications();
 
@@ -95,12 +105,27 @@ export default function App() {
 		const fetchDataAndScheduleNotifications = async () => {
 			const treatmentUuid = await fetchData();
 			if (treatmentUuid) {
-				await scheduleNotifications(treatmentUuid);
+				try {
+					setUpdatingNotifications(true);
+					console.log('isConnected', isConnected);
+					let notifications = await AsyncStorage.getItem('answeredNotification');
+
+					if (isConnected) {
+						console.log('sending local notifications');
+						await sendLocalNotificationResponses();
+						console.log('scheduling notifications');
+						await scheduleNotifications(treatmentUuid);
+					}
+				} catch (error) {
+					console.error(error);
+				} finally {
+					setUpdatingNotifications(false);
+				}
 			}
 		};
 
 		fetchDataAndScheduleNotifications();
-	}, []);
+	}, [isConnected]);
 
 	const Stack = createStackNavigator();
 

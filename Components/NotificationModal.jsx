@@ -41,7 +41,9 @@ export default function NotificationModal({ route }) {
 		// );
 		// notifications[index] = updatedNotification;
 		// await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(notifications));
-		goToNextQuestion();
+		if (notificationIndex < notification.questions.length - 1) {
+			goToNextQuestion();
+		}
 	};
 
 	const goToPreviousQuestion = () => {
@@ -79,6 +81,12 @@ export default function NotificationModal({ route }) {
 					const index = notifications.findIndex((n) => n.uuid === notification.uuid);
 					notifications.splice(index, 1);
 					await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(notifications));
+				} else {
+					// save the answered notification locally to be sent later
+					const answeredNotifications =
+						JSON.parse(await AsyncStorage.getItem('answeredNotification')) || [];
+					answeredNotifications.push(notification);
+					await AsyncStorage.setItem('answeredNotification', JSON.stringify(answeredNotifications));
 				}
 			} catch (error) {
 				console.error(error);

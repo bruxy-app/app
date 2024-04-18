@@ -62,7 +62,9 @@ export default function Treatments() {
 				<Text style={styles.pageTitle}>Tratamento</Text>
 				{/* <Text style={styles.cardLabel}>Atual</Text> */}
 				<View style={styles.infoCard}>
-					<Text style={{ lineHeight: 20 }}>Código do tratamento: {data.treatment_uuid}</Text>
+					<Text selectable={true} style={{ lineHeight: 20 }}>
+						Código do tratamento: {data.treatment_uuid}
+					</Text>
 					<Text>Responsável: {data.responsible}</Text>
 					<Text>
 						Duração: {data.duration} {data.duration > 1 ? 'dias' : 'dia'}

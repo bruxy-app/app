@@ -53,31 +53,6 @@ export default function Home() {
 		color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
 	};
 
-	async function onPress() {
-		// Create a channel (required for Android)
-		const channel = await notifee.getChannel('default');
-
-		if (!channel) {
-			return;
-		}
-
-		// Display a notification
-		await notifee.displayNotification({
-			title: 'Alerta de bruxismo',
-			body: 'Responda as perguntas sobre bruxismo',
-			id: 'a',
-			android: {
-				channelId: channel.id,
-
-				// pressAction is needed if you want the notification to open the app when pressed
-				pressAction: {
-					id: 'question-modal',
-					mainComponent: 'notification-modal',
-				},
-			},
-		});
-	}
-
 	const screenWidth = Dimensions.get('window').width;
 	return (
 		<ScrollView style={styles.container}>
@@ -96,7 +71,7 @@ export default function Home() {
 				</View>
 			) : null} */}
 
-			<Text style={styles.cardLabel}>Entenda sobre o bruxismo</Text>
+			{/* <Text style={styles.cardLabel}>Entenda sobre o bruxismo</Text>
 			<View style={{ ...styles.infoCard, marginBottom: 10 }}>
 				<Text style={{ lineHeight: 20 }}>
 					Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
@@ -109,20 +84,32 @@ export default function Home() {
 				<TouchableOpacity onPress={() => onPress()} style={styles.infoButton}>
 					<Text>Saiba mais</Text>
 				</TouchableOpacity>
-			</View>
-			<Text style={styles.cardLabel}>Como usar o aplicativo</Text>
-			<View style={styles.infoCard}>
+			</View> */}
+			<Text style={styles.cardLabel}>
+				Seja bem-vindo(a) ao Bruxy, um aplicativo para ajudar com o seu tratamento de bruxismo.
+			</Text>
+			<View style={{ ...styles.infoCard, marginBottom: 10 }}>
 				<Text style={{ lineHeight: 20 }}>
-					Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has
-					been the industry's standard dummy text ever since the 1500s, when an unknown printer took
-					a galley of type and scrambled it to make a type specimen book. It has survived not only
-					five centuries, but also the leap into electronic typesetting, remaining essentially
-					unchanged.
+					O Bruxy ainda está em desenvolvimento, por isso você pode encontrar alguns erros durante o
+					uso. Caso encontre algum problema ou tenha alguma sugestão, por favor, entre em contato.
 				</Text>
 
-				<TouchableOpacity style={styles.infoButton}>
+				{/* <TouchableOpacity onPress={() => onPress()} style={styles.infoButton}>
 					<Text>Saiba mais</Text>
-				</TouchableOpacity>
+				</TouchableOpacity> */}
+			</View>
+			<Text style={styles.cardLabel}>Como funciona o aplicativo</Text>
+			<View style={styles.infoCard}>
+				<Text style={{ lineHeight: 20 }}>
+					O Bruxy funciona através do envio de notificações ao longo do dia para fazer o
+					acompanhamento do seu caso de bruxismo. Pedimos que você responda às perguntas assim que
+					possível, para ter maior precisão nos dados. Em breve você poderá acompanhar o seu
+					tratamento por aqui.
+				</Text>
+
+				{/* <TouchableOpacity style={styles.infoButton}>
+					<Text>Saiba mais</Text>
+				</TouchableOpacity> */}
 			</View>
 		</ScrollView>
 	);
