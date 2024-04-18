@@ -8,15 +8,16 @@
 			"distribution": "internal",
 			"android": {
 				"buildType": "apk"
-			},
-			"env": {
-				"EXPO_PUBLIC_API_URL": ""
 			}
 		},
 		"preview": {
 			"distribution": "internal"
 		},
-		"production": {}
+		"production": {
+			"android": {
+				"buildType": "apk"
+			}
+		}
 	},
 	"submit": {
 		"production": {}
