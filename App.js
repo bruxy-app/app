@@ -18,6 +18,7 @@ import {
 	scheduleNotifications,
 	sendLocalNotificationResponses,
 } from './helpers';
+import notifee from '@notifee/react-native';
 import { StatusBar } from 'react-native';
 import { useNetInfo } from '@react-native-community/netinfo';
 
@@ -108,8 +109,6 @@ export default function App() {
 				try {
 					setUpdatingNotifications(true);
 					console.log('isConnected', isConnected);
-					let notifications = await AsyncStorage.getItem('answeredNotification');
-
 					if (isConnected) {
 						console.log('sending local notifications');
 						await sendLocalNotificationResponses();
@@ -124,7 +123,19 @@ export default function App() {
 			}
 		};
 
-		fetchDataAndScheduleNotifications();
+		const bootstrap = async () => {
+			const initialNotification = await notifee.getInitialNotification();
+			if (initialNotification) {
+				console.log('initial notification', initialNotification);
+				navigationRef.current?.navigate('question-modal', {
+					notification_uuid: initialNotification.notification.id,
+				});
+			} else {
+				fetchDataAndScheduleNotifications();
+			}
+		};
+
+		bootstrap();
 	}, [isConnected]);
 
 	const Stack = createStackNavigator();

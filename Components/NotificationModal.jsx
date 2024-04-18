@@ -83,8 +83,13 @@ export default function NotificationModal({ route }) {
 					await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(notifications));
 				} else {
 					// save the answered notification locally to be sent later
-					const answeredNotifications =
-						JSON.parse(await AsyncStorage.getItem('answeredNotification')) || [];
+					const answeredNotifications = await AsyncStorage.getItem('answeredNotification');
+
+					if (!answeredNotifications) {
+						answeredNotifications = [];
+					} else {
+						answeredNotifications = JSON.parse(answeredNotifications);
+					}
 					answeredNotifications.push(notification);
 					await AsyncStorage.setItem('answeredNotification', JSON.stringify(answeredNotifications));
 				}

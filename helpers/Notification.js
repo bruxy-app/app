@@ -25,7 +25,7 @@ export const setupNotifications = async () => {
 	notifee.onForegroundEvent(async (event) => {
 		if (event.type === EventType.PRESS) {
 			if (event.detail.pressAction.id === 'question-modal') {
-				navigationRef.navigate('question-modal', {
+				navigationRef.current?.navigate('question-modal', {
 					notification_uuid: event.detail.notification.id,
 				});
 			}
@@ -36,7 +36,7 @@ export const setupNotifications = async () => {
 		if (event.type === EventType.PRESS) {
 			if (event.detail.pressAction.id === 'question-modal') {
 				console.log('notification press', event.detail.notification.id);
-				navigationRef.navigate('question-modal', {
+				navigationRef.current?.navigate('question-modal', {
 					notification_uuid: event.detail.notification.id,
 				});
 
