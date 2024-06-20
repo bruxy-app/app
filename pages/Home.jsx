@@ -1,41 +1,25 @@
 import { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions, ScrollView } from 'react-native';
+import {
+	View,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	Dimensions,
+	ScrollView,
+	ActivityIndicator,
+} from 'react-native';
 import { PieChart } from 'react-native-chart-kit';
 import { api } from '../helpers';
 import notifee from '@notifee/react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function Home() {
-	const [data, setData] = useState([]);
+export default function Home({ route }) {
 	const [hasTreatment, setHasTreatment] = useState('');
-
-	const getData = async () => {
-		try {
-			const { data } = await api.get('/treatments');
-
-			setData([
-				{
-					name: 'Concluído',
-					progress: data.progress,
-					color: '#FFF',
-				},
-				{
-					name: 'Em andamento',
-					progress: 100 - data.progress,
-					color: '#2176FF',
-				},
-			]);
-		} catch (error) {
-			console.error(error);
-		}
-	};
 
 	useEffect(() => {
 		const getPageData = async () => {
 			const hasTreatment = await AsyncStorage.getItem('treatmentUuid');
-			if (!hasTreatment) {
-				getData();
-			} else {
+			if (hasTreatment) {
 				setHasTreatment(true);
 			}
 		};
@@ -54,6 +38,21 @@ export default function Home() {
 	};
 
 	const screenWidth = Dimensions.get('window').width;
+
+	if (route.params.updatingNotifications) {
+		return (
+			// center loading spinner
+			<ScrollView style={{ paddingTop: 50, paddingBottom: 10, paddingLeft: 10, paddingRight: 10 }}>
+				<View style={styles.infoCard}>
+					<Text style={{ textAlign: 'center', marginBottom: 10, fontSize: 18 }}>
+						Carregando as notificações
+					</Text>
+					<ActivityIndicator size='large' color='#2176FF' />
+				</View>
+			</ScrollView>
+		);
+	}
+
 	return (
 		<ScrollView style={styles.container}>
 			{/* {hasTreatment ? (
@@ -85,6 +84,7 @@ export default function Home() {
 					<Text>Saiba mais</Text>
 				</TouchableOpacity>
 			</View> */}
+
 			<Text style={styles.cardLabel}>
 				Seja bem-vindo(a) ao Bruxy, um aplicativo para ajudar com o seu tratamento de bruxismo.
 			</Text>
@@ -93,10 +93,6 @@ export default function Home() {
 					O Bruxy ainda está em desenvolvimento, por isso você pode encontrar alguns erros durante o
 					uso. Caso encontre algum problema ou tenha alguma sugestão, por favor, entre em contato.
 				</Text>
-
-				{/* <TouchableOpacity onPress={() => onPress()} style={styles.infoButton}>
-					<Text>Saiba mais</Text>
-				</TouchableOpacity> */}
 			</View>
 			<Text style={styles.cardLabel}>Como funciona o aplicativo</Text>
 			<View style={styles.infoCard}>
@@ -106,10 +102,6 @@ export default function Home() {
 					possível, para ter maior precisão nos dados. Em breve você poderá acompanhar o seu
 					tratamento por aqui.
 				</Text>
-
-				{/* <TouchableOpacity style={styles.infoButton}>
-					<Text>Saiba mais</Text>
-				</TouchableOpacity> */}
 			</View>
 		</ScrollView>
 	);

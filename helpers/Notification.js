@@ -19,6 +19,7 @@ export const setupNotifications = async () => {
 		id: 'default',
 		name: 'default',
 		bypassDnd: true,
+		sound: 'default',
 		importance: AndroidImportance.HIGH,
 	});
 
@@ -67,6 +68,7 @@ export const scheduleNotifications = async (treatmentUuid) => {
 
 export const scheduleNotification = async (data) => {
 	console.log('notification', data);
+	// todo: possibly remove the past date check
 	if (data.response || new Date(data.sent_at).getTime() < new Date().getTime()) {
 		return false;
 	}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AppRegistry } from 'react-native';
 import Home from './pages/Home';
-import TreatmentProgress from './pages/TreatmentProgress';
+import Notifications from './pages/Notifications';
 import Treatments from './pages/Treatments';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -24,7 +24,7 @@ import { useNetInfo } from '@react-native-community/netinfo';
 
 AppRegistry.registerComponent('notification-modal', NotificationModal);
 
-function BottomTabs() {
+function BottomTabs({ updatingNotifications }) {
 	const Tab = createBottomTabNavigator();
 
 	return (
@@ -42,7 +42,7 @@ function BottomTabs() {
 					if (route.name === 'Home') {
 						return <FontAwesomeIcon name='home' size={30} color={focused ? '#FFF' : '#000'} />;
 					}
-					if (route.name === 'TreatmentProgress') {
+					if (route.name === 'Notifications') {
 						return <AntDesignIcon name='linechart' size={30} color={focused ? '#FFF' : '#000'} />;
 					}
 					if (route.name === 'Treatments') {
@@ -53,6 +53,7 @@ function BottomTabs() {
 		>
 			<Tab.Screen
 				name='Home'
+				initialParams={{ updatingNotifications }}
 				component={Home}
 				options={{
 					title: '',
@@ -61,14 +62,14 @@ function BottomTabs() {
 					unmountOnBlur: true,
 				}}
 			/>
-			{/* <Tab.Screen
-				name='TreatmentProgress'
-				component={TreatmentProgress}
+			<Tab.Screen
+				name='Notifications'
+				component={Notifications}
 				options={{
 					title: '',
 					tabBarLabel: '',
 				}}
-			/> */}
+			/>
 			<Tab.Screen
 				name='Treatments'
 				component={Treatments}
@@ -84,7 +85,7 @@ function BottomTabs() {
 }
 
 export default function App() {
-	const [updatingNotifications, setUpdatingNotifications] = useState(false);
+	const [updatingNotifications, setUpdatingNotifications] = useState(true);
 	const { isConnected } = useNetInfo();
 
 	useEffect(() => {
@@ -149,7 +150,15 @@ export default function App() {
 				}}
 				initialRouteName='Main'
 			>
-				<Stack.Screen name='Main' component={BottomTabs} />
+				<Stack.Screen name='Main'>
+					{(props) => (
+						<BottomTabs
+							{...props}
+							key={updatingNotifications}
+							updatingNotifications={updatingNotifications}
+						/>
+					)}
+				</Stack.Screen>
 				<Stack.Screen name='question-modal' component={NotificationModal} />
 			</Stack.Navigator>
 		</NavigationContainer>
