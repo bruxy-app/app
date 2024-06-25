@@ -1,10 +1,10 @@
-import { View, StyleSheet, Text, FlatList, TouchableOpacity, BackHandler } from 'react-native';
+import { View, StyleSheet, Text, FlatList, TouchableOpacity, BackHandler, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../helpers/api';
 import { useNetInfo } from '@react-native-community/netinfo';
 
-export default function NotificationModal({ route }) {
+export default function NotificationModal({ route, navigation }) {
 	const [notificationIndex, setNotificationIndex] = useState(0);
 	const [notification, setNotification] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -31,7 +31,7 @@ export default function NotificationModal({ route }) {
 	const handleOptionPress = async (option) => {
 		console.log('option', option);
 		// Set the current question answer as the selected option
-		const updatedNotification = { ...notification };
+		let updatedNotification = { ...notification };
 		updatedNotification.questions[notificationIndex].response = option;
 		setNotification(updatedNotification);
 		// Save the updated notification
@@ -61,8 +61,9 @@ export default function NotificationModal({ route }) {
 		} else {
 			try {
 				setLoading(true);
+				console.log('is connected', isConnected);
 				// update all local notifications with the new responses
-				const localNotifications = JSON.parse(await AsyncStorage.getItem('scheduledNotifications'));
+				let localNotifications = JSON.parse(await AsyncStorage.getItem('scheduledNotifications'));
 				const index = localNotifications.findIndex((n) => n.uuid === notification.uuid);
 				localNotifications[index] = notification;
 
@@ -70,21 +71,21 @@ export default function NotificationModal({ route }) {
 				await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(localNotifications));
 
 				// check if the device is connected to the internet, if so, send the responses to the server
-				console.log('is connected', isConnected);
 				if (isConnected) {
 					await api.post(`treatments/${notification.uuid}/respond`, {
 						notification,
 					});
 
 					// remove the notification from local storage
-					const notifications = JSON.parse(await AsyncStorage.getItem('scheduledNotifications'));
+					let notifications = JSON.parse(await AsyncStorage.getItem('scheduledNotifications'));
 					const index = notifications.findIndex((n) => n.uuid === notification.uuid);
 					notifications.splice(index, 1);
 					await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(notifications));
 				} else {
 					// save the answered notification locally to be sent later
-					const answeredNotifications = await AsyncStorage.getItem('answeredNotification');
+					let answeredNotifications = await AsyncStorage.getItem('answeredNotification');
 
+					console.log('current answered notifications', answeredNotifications);
 					if (!answeredNotifications) {
 						answeredNotifications = [];
 					} else {
@@ -92,12 +93,15 @@ export default function NotificationModal({ route }) {
 					}
 					answeredNotifications.push(notification);
 					await AsyncStorage.setItem('answeredNotification', JSON.stringify(answeredNotifications));
+
+					console.log('afer setting local notifications', answeredNotifications);
 				}
 			} catch (error) {
-				console.error(error);
+				console.log('error', error);
 			} finally {
 				setLoading(false);
-				BackHandler.exitApp();
+				// go to the main page
+				navigation.navigate('Home');
 			}
 		}
 	};
@@ -115,17 +119,14 @@ export default function NotificationModal({ route }) {
 	}
 
 	if (!notification) {
-		return (
-			<View style={styles.container}>
-				<Text style={styles.loadingText}>No notification found</Text>
-			</View>
-		);
+		navigation.navigate('Home');
+		return;
 	}
 
 	const currentQuestion = notification.questions[notificationIndex]; // Get the current question
 
 	return (
-		<View style={styles.container}>
+		<ScrollView style={styles.container}>
 			<Text style={styles.questionText}>{currentQuestion.question}</Text>
 			<FlatList
 				data={currentQuestion.options}
@@ -145,7 +146,8 @@ export default function NotificationModal({ route }) {
 				keyExtractor={(item, index) => index.toString()}
 				contentContainerStyle={styles.optionsContainer}
 			/>
-			<View style={styles.header}>
+
+			<View style={styles.footer}>
 				<TouchableOpacity
 					disabled={notificationIndex === 0}
 					style={styles.button}
@@ -167,7 +169,7 @@ export default function NotificationModal({ route }) {
 					</Text>
 				</TouchableOpacity>
 			</View>
-		</View>
+		</ScrollView>
 	);
 }
 
@@ -199,8 +201,9 @@ const styles = StyleSheet.create({
 	optionsContainer: {
 		paddingBottom: 10,
 	},
-	header: {
+	footer: {
 		padding: 10,
+		marginBottom: 10,
 		flexDirection: 'row',
 		flexWrap: 'nowrap',
 		alignItems: 'center',

@@ -62,14 +62,14 @@ function BottomTabs({ updatingNotifications }) {
 					unmountOnBlur: true,
 				}}
 			/>
-			<Tab.Screen
+			{/* <Tab.Screen
 				name='Notifications'
 				component={Notifications}
 				options={{
 					title: '',
 					tabBarLabel: '',
 				}}
-			/>
+			/> */}
 			<Tab.Screen
 				name='Treatments'
 				component={Treatments}
@@ -119,6 +119,7 @@ export default function App() {
 				} catch (error) {
 					console.error(error);
 				} finally {
+					console.log('finished updating')
 					setUpdatingNotifications(false);
 				}
 			}

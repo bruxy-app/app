@@ -89,6 +89,7 @@ export const scheduleNotification = async (data) => {
 			android: {
 				ongoing: true,
 				channelId: 'default',
+				sound: 'default',
 				pressAction: {
 					id: 'question-modal',
 					mainComponent: 'notification-modal',
@@ -125,8 +126,10 @@ export const sendLocalNotificationResponses = async () => {
 			notification,
 		});
 
-		notifications.splice(index, 1);
-
-		await AsyncStorage.setItem('answeredNotification', JSON.stringify(notifications));
+		console.log('after sending notification', notification);
 	}
+
+	await AsyncStorage.setItem('answeredNotification', JSON.stringify([]));
+
+	console.log('Finished sending local notifications');
 };

@@ -79,6 +79,7 @@ export default function Treatments() {
 
 	return (
 		<ScrollView>
+			{/* todo: add text here to  */}
 			<View
 				style={{
 					alignItems: 'center',
