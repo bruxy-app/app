@@ -1,14 +1,16 @@
 import { View, StyleSheet, Text, FlatList, TouchableOpacity, BackHandler, ScrollView } from 'react-native';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from '../helpers/api';
+import { api, sendLocalNotificationResponses } from '../helpers';
 import { useNetInfo } from '@react-native-community/netinfo';
 
 export default function NotificationModal({ route, navigation }) {
 	const [notificationIndex, setNotificationIndex] = useState(0);
 	const [notification, setNotification] = useState(null);
 	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
 	const { isConnected } = useNetInfo();
+	// const isConnected = false;
 
 	const fetchNotification = async () => {
 		setLoading(true); // Set loading state to true before fetching data
@@ -23,6 +25,7 @@ export default function NotificationModal({ route, navigation }) {
 			}
 		} catch (error) {
 			console.error(error);
+			setError(error);
 		} finally {
 			setLoading(false); // Set loading state to false after fetching data
 		}
@@ -81,6 +84,8 @@ export default function NotificationModal({ route, navigation }) {
 					const index = notifications.findIndex((n) => n.uuid === notification.uuid);
 					notifications.splice(index, 1);
 					await AsyncStorage.setItem('scheduledNotifications', JSON.stringify(notifications));
+
+					await sendLocalNotificationResponses();
 				} else {
 					// save the answered notification locally to be sent later
 					let answeredNotifications = await AsyncStorage.getItem('answeredNotification');
@@ -98,6 +103,7 @@ export default function NotificationModal({ route, navigation }) {
 				}
 			} catch (error) {
 				console.log('error', error);
+				setError(error);
 			} finally {
 				setLoading(false);
 				// go to the main page
@@ -109,6 +115,15 @@ export default function NotificationModal({ route, navigation }) {
 	useEffect(() => {
 		fetchNotification();
 	}, []);
+
+	if (error) {
+		return (
+			<View style={styles.container}>
+				<Text style={styles.loadingText}>Erro ao carregar a notificação</Text>
+				<Text style={styles.loadingText}>{error}</Text>
+			</View>
+		);
+	}
 
 	if (loading) {
 		return (

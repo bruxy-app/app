@@ -119,7 +119,7 @@ export default function App() {
 				} catch (error) {
 					console.error(error);
 				} finally {
-					console.log('finished updating')
+					console.log('finished updating');
 					setUpdatingNotifications(false);
 				}
 			}
@@ -135,6 +135,8 @@ export default function App() {
 			} else {
 				fetchDataAndScheduleNotifications();
 			}
+
+			setUpdatingNotifications(false);
 		};
 
 		bootstrap();
